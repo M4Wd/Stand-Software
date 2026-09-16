@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Drone Test Stand</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Drone Test Stand</h1>
+  <div class="row">
+    <span id="mode-badge" class="badge">mode</span>
+    <span id="conn-badge" class="badge disconnected">disconnected</span>
+    <span id="armed-badge" class="badge disarmed">disarmed</span>
+    <button class="stop-btn" id="stop-btn">STOP</button>
+  </div>
+</div>
+
+<div class="grid" id="tiles">
+  <div class="tile"><div class="label">Thrust</div><div class="value"><span id="v-thrust">--</span><span class="unit">g</span></div></div>
+  <div class="tile"><div class="label">Torque</div><div class="value"><span id="v-torque">--</span><span class="unit">N&middot;cm</span></div></div>
+  <div class="tile"><div class="label">RPM</div><div class="value"><span id="v-rpm">--</span></div></div>
+  <div class="tile"><div class="label">Voltage</div><div class="value"><span id="v-voltage">--</span><span class="unit">V</span></div></div>
+  <div class="tile"><div class="label">Current</div><div class="value"><span id="v-current">--</span><span class="unit">A</span></div></div>
+  <div class="tile"><div class="label">Power</div><div class="value"><span id="v-power">--</span><span class="unit">W</span></div></div>
+  <div class="tile"><div class="label">Efficiency</div><div class="value"><span id="v-eff">--</span><span class="unit">g/W</span></div></div>
+  <div class="tile"><div class="label">Throttle</div><div class="value"><span id="v-throttle">--</span><span class="unit">&micro;s</span></div></div>
+</div>
+
+<div class="charts">
+  <div class="panel chart-card">
+    <h2>Thrust &amp; Torque</h2>
+    <canvas id="chart-force"></canvas>
+    <div class="legend"><span><span class="dot" style="background:#4da3ff"></span>Thrust (g)</span><span><span class="dot" style="background:#f5a623"></span>Torque (N&middot;cm)</span></div>
+  </div>
+  <div class="panel chart-card">
+    <h2>RPM</h2>
+    <canvas id="chart-rpm"></canvas>
+    <div class="legend"><span><span class="dot" style="background:#3ecf8e"></span>RPM</span></div>
+  </div>
+  <div class="panel chart-card">
+    <h2>Voltage &amp; Current</h2>
+    <canvas id="chart-elec"></canvas>
+    <div class="legend"><span><span class="dot" style="background:#4da3ff"></span>Voltage (V)</span><span><span class="dot" style="background:#f0555a"></span>Current (A)</span></div>
+  </div>
+  <div class="panel chart-card">
+    <h2>Power &amp; Efficiency</h2>
+    <canvas id="chart-power"></canvas>
+    <div class="legend"><span><span class="dot" style="background:#4da3ff"></span>Power (W)</span><span><span class="dot" style="background:#3ecf8e"></span>Efficiency (g/W)</span></div>
+  </div>
+</div>
+
+<div class="panels">
+
+  <div class="panel">
+    <h2>Throttle control</h2>
+    <div class="row">
+      <button id="arm-btn" class="primary">Arm</button>
+      <button id="disarm-btn">Disarm</button>
+    </div>
+    <label>Throttle (<span id="throttle-us-label">1000</span> &micro;s)</label>
+    <input type="range" id="throttle-slider" min="1000" max="2000" value="1000" step="10">
+    <div class="msg" id="throttle-msg"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Calibration</h2>
+    <label>Channel</label>
+    <select id="cal-channel" style="width:100%;background:#0e1116;color:#e6e9ef;border:1px solid #262b35;padding:7px;border-radius:6px;">
+      <option value="thrust">Thrust</option>
+      <option value="torque">Torque</option>
+    </select>
+    <button id="tare-btn">Tare (zero)</button>
+    <label>Known reference value (g for thrust, N&middot;cm for torque)</label>
+    <input type="number" id="cal-known-value" step="any" placeholder="e.g. 500">
+    <button id="calibrate-btn">Capture calibration point</button>
+    <div class="msg" id="cal-msg"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Manual test recording</h2>
+    <label>Run name</label>
+    <input type="text" id="test-name" value="test" placeholder="run name">
+    <div class="row">
+      <button id="test-start-btn" class="primary">Start recording</button>
+      <button id="test-stop-btn">Stop recording</button>
+    </div>
+    <div class="msg" id="test-msg"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Automated throttle sweep</h2>
+    <div class="row">
+      <div style="flex:1"><label>Min (&micro;s)</label><input type="number" id="sweep-min" value="1100"></div>
+      <div style="flex:1"><label>Max (&micro;s)</label><input type="number" id="sweep-max" value="1900"></div>
+    </div>
+    <div class="row">
+      <div style="flex:1"><label>Step (&micro;s)</label><input type="number" id="sweep-step" value="50"></div>
+      <div style="flex:1"><label>Hold (s)</label><input type="number" id="sweep-hold" value="2" step="0.5"></div>
+    </div>
+    <label>Run name</label>
+    <input type="text" id="sweep-name" value="sweep">
+    <div class="row">
+      <button id="sweep-start-btn" class="primary">Start sweep</button>
+      <button id="sweep-stop-btn" class="danger">Stop sweep</button>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="sweep-progress"></div></div>
+    <div class="msg" id="sweep-msg"></div>
+  </div>
+
+  <div class="panel" style="grid-column: 1 / -1;">
+    <h2>Past runs</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Started</th><th>Duration</th><th>Samples</th><th></th></tr></thead>
+      <tbody id="runs-body"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

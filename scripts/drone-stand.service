@@ -1,0 +1,16 @@
+[Unit]
+Description=Drone Test Stand web app
+After=network.target pigpiod.service
+Requires=pigpiod.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/drone-stand
+Environment=STAND_MODE=hardware
+ExecStart=/home/pi/drone-stand/.venv/bin/python run.py
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,52 @@
+# Drone test stand configuration
+#
+# mode: "mock" runs a simulated stand (no hardware needed) for development
+#       and UI testing. "hardware" drives the real GPIO/I2C sensors below.
+mode: mock
+
+sample_rate_hz: 20
+
+data_dir: data
+
+# BCM GPIO pin numbers.
+pins:
+  thrust_hx711: {dt: 5, sck: 6}
+  torque_hx711: {dt: 13, sck: 19}
+  rpm_gpio: 26
+  esc_pwm_gpio: 18
+
+rpm:
+  # Number of sensor pulses per motor/prop revolution (e.g. 1 for a single
+  # reflective marker on the prop, or the pole count for a hall sensor setup).
+  pulses_per_rev: 1
+
+i2c:
+  bus: 1
+  ina260_address: 0x40
+
+# Two-point calibration for each load-cell channel: physical_value = (raw - offset) / scale
+# offset is the raw reading at zero load (tare). scale is raw counts per gram (thrust)
+# or per N*cm (torque). Set via the calibration wizard in the web UI; it rewrites this file.
+calibration:
+  thrust:
+    offset: 0.0
+    scale: 1.0
+  torque:
+    offset: 0.0
+    scale: 1.0
+
+esc:
+  min_us: 1000
+  max_us: 2000
+  arm_us: 1000
+  frequency_hz: 50
+
+sweep:
+  default_min_us: 1100
+  default_max_us: 1900
+  default_step_us: 50
+  default_hold_s: 2.0
+
+# Seconds without a throttle command before the watchdog forces the ESC back
+# to idle. Protects against a dropped web connection leaving the motor running.
+watchdog_timeout_s: 2.0
